@@ -17,7 +17,9 @@ enum class StationCode {
     Changwang,  // 长望楼
     Oufang,     // 藕舫楼
     Beichen,    // 北辰楼
-    Dorm1,      // 西苑一号站
+    Dorm1,      // 西苑宿舍楼1
+    Dorm2,      // 西苑宿舍楼2
+    Dorm3,      // 西苑宿舍楼3
     Gym,        // 体育馆
     Admin       // 行政楼
 };

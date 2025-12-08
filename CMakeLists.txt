@@ -18,5 +18,15 @@ add_library(rainhub_common STATIC
 target_link_libraries(rainhub_common PRIVATE Qt6::Core)
 target_include_directories(rainhub_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/model)
 
+# Client executable (MVC View/Control entrypoint)
+add_executable(rainhub_client
+    client/main.cpp
+    client/MainWindow.h
+    client/MainWindow.cpp
+    client/SlotItem.h
+    client/SlotItem.cpp
+)
+target_link_libraries(rainhub_client PRIVATE Qt6::Core Qt6::Widgets rainhub_common)
+
 # Placeholder: add executables / further targets under client/server later.
 

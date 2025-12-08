@@ -15,7 +15,9 @@ public:
             case StationCode::Changwang: return "长望楼";
             case StationCode::Oufang:    return "藕舫楼";
             case StationCode::Beichen:   return "北辰楼";
-            case StationCode::Dorm1:     return "西苑一号站";
+            case StationCode::Dorm1:     return "西苑宿舍楼1";
+            case StationCode::Dorm2:     return "西苑宿舍楼2";
+            case StationCode::Dorm3:     return "西苑宿舍楼3";
             case StationCode::Gym:       return "体育馆";
             case StationCode::Admin:     return "行政楼";
             default:                     return "未知站点";
