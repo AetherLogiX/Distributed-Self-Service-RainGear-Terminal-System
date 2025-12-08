@@ -1,0 +1,20 @@
+build/
+out/
+*.user
+*.user.*
+cmake-build-*/
+.vs/
+.vscode/
+*.pro.user
+*.qbs.user
+*.qmlproject.user
+*.autosave
+
+# CMake artifacts
+CMakeFiles/
+CMakeCache.txt
+Testing/
+CTestTestfile.cmake
+compile_commands.json
+_deps/
+
