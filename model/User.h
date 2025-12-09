@@ -6,8 +6,7 @@
 
 #include <QString>
 #include <memory>
-
-class RainGear; // 前置声明，避免头文件循环依赖
+#include "RainGear.h"
 
 class User {
 public:

@@ -7,11 +7,15 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
+#include <QPixmap>
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QTextBrowser>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QDebug>
+#include <algorithm>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -126,17 +130,18 @@ QWidget* MainWindow::createLoginPage()
     form->setFormAlignment(Qt::AlignHCenter);
     form->setVerticalSpacing(12);
     m_inputUser = new QLineEdit(page);
-    m_inputPass = new QLineEdit(page);
-    m_inputPass->setEchoMode(QLineEdit::Password);
+    m_inputName = new QLineEdit(page);
+    m_inputUser->setPlaceholderText(tr("请输入学号/工号"));
+    m_inputName->setPlaceholderText(tr("请输入姓名（与数据库一致）"));
     form->addRow(tr("账号："), m_inputUser);
-    form->addRow(tr("密码："), m_inputPass);
+    form->addRow(tr("姓名："), m_inputName);
 
     auto *btnLogin = new QPushButton(tr("登录"), page);
     btnLogin->setFixedWidth(160);
     connect(btnLogin, &QPushButton::clicked, this, [this] {
-        // Mock success
-        updateProfileMock();
-        switchPage(Page::Dashboard);
+        if (performLogin()) {
+            switchPage(Page::Dashboard);
+        }
     });
 
     auto *btnReset = new QPushButton(tr("修改密码"), page);
@@ -238,7 +243,7 @@ QWidget* MainWindow::createDashboardPage()
     auto *btnMap = new QPushButton(tr("🗺️ 查看地图"), page);
     btnMap->setFixedWidth(150);
     connect(btnProfile, &QPushButton::clicked, this, [this] {
-        updateProfileMock();
+        updateProfileFromUser();
         switchPage(Page::Profile);
     });
     connect(btnMap, &QPushButton::clicked, this, [this] {
@@ -364,7 +369,7 @@ QWidget* MainWindow::createProfilePage()
     auto *btnRefresh = new QPushButton(tr("刷新余额"), page);
     btnRefresh->setFixedWidth(140);
     connect(btnRefresh, &QPushButton::clicked, this, [this] {
-        updateProfileMock();
+        updateProfileFromUser();
     });
     auto *btnBack = new QPushButton(tr("返回"), page);
     btnBack->setFixedWidth(120);
@@ -375,6 +380,7 @@ QWidget* MainWindow::createProfilePage()
     bottom->addStretch();
     bottom->addWidget(btnBack,0,Qt::AlignRight);
     top->addLayout(bottom);
+    updateProfileFromUser();
     return page;
 }
 
@@ -433,8 +439,33 @@ void MainWindow::switchPage(Page page)
 
 void MainWindow::populateSlots(bool borrowMode)
 {
-    // Mock data: green for available (borrow), gray for empty (return), red for maintenance.
-    // In real implementation, fill from server inventory.
+    struct Visual { QString label; QString path; };
+    static const QVector<Visual> visuals = {
+        {QStringLiteral("#1 普通塑料伞"), QStringLiteral(":/rgear_icons/plastic_unbrella.png")},
+        {QStringLiteral("#2 普通塑料伞"), QStringLiteral(":/rgear_icons/plastic_unbrella.png")},
+        {QStringLiteral("#3 普通塑料伞"), QStringLiteral(":/rgear_icons/plastic_unbrella.png")},
+        {QStringLiteral("#4 普通塑料伞"), QStringLiteral(":/rgear_icons/plastic_unbrella.png")},
+        {QStringLiteral("#5 高质量抗风伞"), QStringLiteral(":/rgear_icons/highquality_unbrella.png")},
+        {QStringLiteral("#6 高质量抗风伞"), QStringLiteral(":/rgear_icons/highquality_unbrella.png")},
+        {QStringLiteral("#7 高质量抗风伞"), QStringLiteral(":/rgear_icons/highquality_unbrella.png")},
+        {QStringLiteral("#8 高质量抗风伞"), QStringLiteral(":/rgear_icons/highquality_unbrella.png")},
+        {QStringLiteral("#9 遮阳伞"), QStringLiteral(":/rgear_icons/sunshade_umbrella.png")},
+        {QStringLiteral("#10 遮阳伞"), QStringLiteral(":/rgear_icons/sunshade_umbrella.png")},
+        {QStringLiteral("#11 雨衣"), QStringLiteral(":/rgear_icons/raincoat.png")},
+        {QStringLiteral("#12 雨衣"), QStringLiteral(":/rgear_icons/raincoat.png")}
+    };
+
+    // 绑定图标与描述到槽位
+    const int count = std::min(m_slots.size(), visuals.size());
+    for (int i = 0; i < count; ++i) {
+        QPixmap icon(visuals[i].path);
+        if (icon.isNull()) {
+            qWarning() << "Icon load failed:" << visuals[i].path;
+        }
+        m_slots[i]->setIcon(icon, visuals[i].label);
+    }
+
+    // Mock 状态：绿可借、灰可还、红维修
     for (int i = 0; i < m_slots.size(); ++i) {
         auto *slot = m_slots[i];
         if (borrowMode) {
@@ -466,14 +497,55 @@ void MainWindow::updateRoleLabel()
     m_loginRoleLabel->setText(roleText);
 }
 
-void MainWindow::updateProfileMock()
+void MainWindow::updateProfileFromUser()
 {
     if (!m_profileName || !m_profileId || !m_profileBalance || !m_profileTitle) return;
-    const bool isStudent = m_currentRole != Role::Staff;
+
+    if (!m_currentUser) {
+        m_profileTitle->setText(tr("个人信息"));
+        m_profileName->setText(tr("姓名：-"));
+        m_profileId->setText(tr("账号：-"));
+        m_profileBalance->setText(tr("账户余额：￥0.00"));
+        m_profileBalance->setStyleSheet("font-size:18px; font-weight:600; color:#7f8c8d;");
+        return;
+    }
+
+    const bool isStaff = m_currentUser->get_role() == 1;
     m_profileTitle->setText(tr("个人信息"));
-    m_profileName->setText(tr("姓名：张三"));
-    m_profileId->setText(isStudent ? tr("学号：2023xxxx") : tr("工号：T0001"));
-    m_profileBalance->setText(tr("账户余额：￥50.00"));
+    m_profileName->setText(tr("姓名：%1").arg(m_currentUser->get_name()));
+    m_profileId->setText(isStaff ? tr("工号：%1").arg(m_currentUser->get_id())
+                                 : tr("学号：%1").arg(m_currentUser->get_id()));
+    m_profileBalance->setText(tr("账户余额：￥%1").arg(QString::number(m_currentUser->get_balance(), 'f', 2)));
     m_profileBalance->setStyleSheet("font-size:18px; font-weight:600; color:#2ecc71;");
+}
+
+bool MainWindow::performLogin()
+{
+    const QString userId = m_inputUser ? m_inputUser->text().trimmed() : QString();
+    const QString realName = m_inputName ? m_inputName->text().trimmed() : QString();
+
+    if (userId.isEmpty() || realName.isEmpty()) {
+        QMessageBox::warning(this, tr("提示"), tr("请输入学号/工号和姓名"));
+        return false;
+    }
+
+    if (!DatabaseManager::init()) {
+        QMessageBox::critical(this, tr("数据库错误"), tr("无法连接到本地 MySQL，请检查服务是否已启动。"));
+        return false;
+    }
+
+    auto record = DatabaseManager::fetchUserByIdAndName(userId, realName);
+    if (!record) {
+        QMessageBox::warning(this, tr("登录失败"), tr("未在数据库中找到匹配的用户，请检查输入。"));
+        return false;
+    }
+
+    m_currentRole = (record->role == 1) ? Role::Staff : Role::Student;
+    m_currentUser = std::make_unique<User>(record->userId, record->realName, record->balance, record->role);
+
+    updateRoleLabel();
+    updateProfileFromUser();
+    QMessageBox::information(this, tr("登录成功"), tr("已从数据库加载用户信息。"));
+    return true;
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QPixmap>
 
 class QLabel;
 
@@ -16,6 +17,7 @@ public:
 
     explicit SlotItem(int index, QWidget *parent = nullptr);
     void setState(State state);
+    void setIcon(const QPixmap &pixmap, const QString &descText);
     State state() const { return m_state; }
 
 signals:
@@ -29,6 +31,7 @@ private:
 
     int m_index;
     State m_state { State::Available };
+    QLabel *m_iconLabel;
     QLabel *m_label;
 };
 

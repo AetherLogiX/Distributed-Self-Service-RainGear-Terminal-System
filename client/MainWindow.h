@@ -2,6 +2,10 @@
 
 #include <QMainWindow>
 #include <QVector>
+#include <memory>
+
+#include "control/DatabaseManager.h"
+#include "model/User.h"
 
 class QStackedWidget;
 class QWidget;
@@ -49,7 +53,8 @@ private:
     void switchPage(Page page);
     void populateSlots(bool borrowMode);
     void updateRoleLabel();
-    void updateProfileMock();
+    void updateProfileFromUser();
+    bool performLogin();
 
     QStackedWidget *m_stack { nullptr };
     QVector<SlotItem*> m_slots;
@@ -60,7 +65,8 @@ private:
     Role m_currentRole { Role::Unknown };
     QLabel *m_loginRoleLabel { nullptr };
     QLineEdit *m_inputUser { nullptr };
-    QLineEdit *m_inputPass { nullptr };
+    QLineEdit *m_inputName { nullptr };
+    std::unique_ptr<User> m_currentUser;
 
     // Profile mock labels
     QLabel *m_profileName { nullptr };
