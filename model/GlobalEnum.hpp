@@ -1,3 +1,8 @@
+/*
+定义全局枚举变量，一个是雨具类型枚举，还有一个是站点枚举
+*/
+#pragma once
+
 #include <QObject> // 为了使用 Q_ENUM 等特性
 
 // 1. 雨具类型枚举 (对应数据库 t_rain_gear.type_id)
@@ -10,7 +15,7 @@ enum class GearType {
 };
 
 // 2. 站点枚举 (代码中使用这些英文名，避免乱码)
-enum class StationCode {
+enum class Station{
     Wende,      // 文德楼
     Mingde,     // 明德楼
     Library,    // 图书馆
@@ -20,6 +25,9 @@ enum class StationCode {
     Dorm1,      // 西苑宿舍楼1
     Dorm2,      // 西苑宿舍楼2
     Dorm3,      // 西苑宿舍楼3
+    Dorm4,      // 中苑宿舍楼4
+    Dorm5,      // 中苑宿舍楼5
+    Dorm6,      // 中苑宿舍楼6
     Gym,        // 体育馆
     Admin       // 行政楼
 };

@@ -14,6 +14,12 @@ find_package(Qt6 6.5 COMPONENTS Core Widgets Network Sql REQUIRED)
 add_library(rainhub_common STATIC
     model/GlobalDefs.h
     model/StationUtils.cpp
+    model/RainGear.h
+    model/RainGear.cpp
+    model/RainGearFactory.h
+    model/Station.h
+    model/Station.cpp
+    model/User.h
 )
 target_link_libraries(rainhub_common PRIVATE Qt6::Core)
 target_include_directories(rainhub_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/model)
