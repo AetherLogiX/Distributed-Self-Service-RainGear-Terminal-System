@@ -22,6 +22,8 @@ public:
 
     // 查询指定学号/工号与姓名的用户，找到则返回用户记录。
     static std::optional<UserRecord> fetchUserByIdAndName(const QString &userId, const QString &realName);
+    // 新增：账号/姓名/密码SHA256
+    static std::optional<UserRecord> fetchUserByIdAndNameAndPassword(const QString &userId, const QString &realName, const QString &plainPassword);
 
 private:
     static QString connName();

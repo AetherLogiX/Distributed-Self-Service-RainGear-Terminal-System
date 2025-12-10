@@ -54,7 +54,7 @@ private:
     void populateSlots(bool borrowMode);
     void updateRoleLabel();
     void updateProfileFromUser();
-    bool performLogin();
+    bool performLogin(); // 会接入sha256密码校验
 
     QStackedWidget *m_stack { nullptr };
     QVector<SlotItem*> m_slots;
@@ -66,6 +66,7 @@ private:
     QLabel *m_loginRoleLabel { nullptr };
     QLineEdit *m_inputUser { nullptr };
     QLineEdit *m_inputName { nullptr };
+    QLineEdit *m_inputPass { nullptr };
     std::unique_ptr<User> m_currentUser;
 
     // Profile mock labels

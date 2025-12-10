@@ -131,10 +131,14 @@ QWidget* MainWindow::createLoginPage()
     form->setVerticalSpacing(12);
     m_inputUser = new QLineEdit(page);
     m_inputName = new QLineEdit(page);
+    m_inputPass = new QLineEdit(page);
+    m_inputPass->setEchoMode(QLineEdit::Password);
     m_inputUser->setPlaceholderText(tr("请输入学号/工号"));
     m_inputName->setPlaceholderText(tr("请输入姓名（与数据库一致）"));
+    m_inputPass->setPlaceholderText(tr("请输入密码"));
     form->addRow(tr("账号："), m_inputUser);
     form->addRow(tr("姓名："), m_inputName);
+    form->addRow(tr("密码："), m_inputPass);
 
     auto *btnLogin = new QPushButton(tr("登录"), page);
     btnLogin->setFixedWidth(160);
@@ -523,9 +527,10 @@ bool MainWindow::performLogin()
 {
     const QString userId = m_inputUser ? m_inputUser->text().trimmed() : QString();
     const QString realName = m_inputName ? m_inputName->text().trimmed() : QString();
+    const QString password = m_inputPass ? m_inputPass->text() : QString();
 
-    if (userId.isEmpty() || realName.isEmpty()) {
-        QMessageBox::warning(this, tr("提示"), tr("请输入学号/工号和姓名"));
+    if (userId.isEmpty() || realName.isEmpty() || password.isEmpty()) {
+        QMessageBox::warning(this, tr("提示"), tr("请输入账号、姓名和密码"));
         return false;
     }
 
@@ -534,9 +539,10 @@ bool MainWindow::performLogin()
         return false;
     }
 
-    auto record = DatabaseManager::fetchUserByIdAndName(userId, realName);
+    // 调用密码校验逻辑（SHA256加密后与数据库中密文比对）
+    auto record = DatabaseManager::fetchUserByIdAndNameAndPassword(userId, realName, password);
     if (!record) {
-        QMessageBox::warning(this, tr("登录失败"), tr("未在数据库中找到匹配的用户，请检查输入。"));
+        QMessageBox::warning(this, tr("登录失败"), tr("账号、姓名或密码错误，请检查输入。"));
         return false;
     }
 
